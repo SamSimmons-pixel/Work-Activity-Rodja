@@ -4,6 +4,7 @@ namespace App\Livewire\Reviews;
 
 use App\Models\PerformanceReview;
 use App\Models\User;
+use App\Notifications\PerformanceReviewCreatedNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -147,7 +148,7 @@ class Index extends Component
         }
 
         if ($this->formMode === 'create') {
-            PerformanceReview::create([
+            $review = PerformanceReview::create([
                 'user_id' => $this->user_id,
                 'reviewer_id' => $currentUser->id,
                 'period_type' => $this->period_type,
@@ -160,6 +161,13 @@ class Index extends Component
                 'improvements' => $this->improvements ?: null,
                 'status' => $this->status,
             ]);
+
+            // Notify evaluated employee
+            $targetUser = User::find($this->user_id);
+            if ($targetUser) {
+                $targetUser->notify(new PerformanceReviewCreatedNotification($review, $currentUser));
+            }
+
             session()->flash('message', 'Review kinerja berhasil disimpan.');
         } else {
             $review = PerformanceReview::findOrFail($this->editingReviewId);

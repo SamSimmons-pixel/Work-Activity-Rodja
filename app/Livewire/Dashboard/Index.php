@@ -5,6 +5,9 @@ namespace App\Livewire\Dashboard;
 use App\Models\Activity;
 use App\Models\ActivityComment;
 use App\Models\User;
+use App\Notifications\ActivityCommentedNotification;
+use App\Notifications\ActivitySubmittedNotification;
+use App\Notifications\ActivityVerifiedNotification;
 use App\Services\HtmlSanitizer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -287,7 +290,7 @@ class Index extends Component
             $attachmentName = $this->attachment->getClientOriginalName();
         }
 
-        Activity::create([
+        $activity = Activity::create([
             'user_id' => $user->id,
             'activity_date' => $this->activity_date,
             'category' => $this->category,
@@ -302,6 +305,11 @@ class Index extends Component
             'created_by' => $user->id,
             'updated_by' => $user->id,
         ]);
+
+        // Notify supervisor if user has one
+        if ($user->supervisor_id && $user->supervisor) {
+            $user->supervisor->notify(new ActivitySubmittedNotification($activity, $user));
+        }
 
         $this->closeFormModal();
         session()->flash('message', 'Aktivitas berhasil disimpan.');
@@ -392,17 +400,22 @@ class Index extends Component
         $activity = Activity::findOrFail($activityId);
         Gate::authorize('view-activity', $activity);
 
-        $this->validate([
-            'newCommentText' => ['required', 'string', 'max:1000'],
-        ], [
-            'newCommentText.required' => 'Tuliskan catatan komentar sebelum mengirim.',
-        ]);
+        $currentUser = Auth::user();
+        $commentText = trim($this->newCommentText);
 
         ActivityComment::create([
             'activity_id' => $activity->id,
-            'user_id' => Auth::id(),
-            'comment' => trim($this->newCommentText),
+            'user_id' => $currentUser->id,
+            'comment' => $commentText,
         ]);
+
+        // Notify activity owner if commenter is someone else
+        if ($activity->user_id !== $currentUser->id && $activity->user) {
+            $activity->user->notify(new ActivityCommentedNotification($activity, $currentUser, $commentText));
+        } elseif ($activity->user_id === $currentUser->id && $currentUser->supervisor_id && $currentUser->supervisor) {
+            // Notify supervisor if employee comments on own activity
+            $currentUser->supervisor->notify(new ActivityCommentedNotification($activity, $currentUser, $commentText));
+        }
 
         $this->reset(['newCommentText', 'commentingActivityId']);
         session()->flash('message', 'Komentar catatan berhasil ditambahkan.');
@@ -441,6 +454,11 @@ class Index extends Component
             'verified_at' => now(),
             'verified_by' => $currentUser->id,
         ]);
+
+        // Notify activity owner
+        if ($activity->user_id !== $currentUser->id && $activity->user) {
+            $activity->user->notify(new ActivityVerifiedNotification($activity, $currentUser, $newStatus));
+        }
 
         $statusText = $newStatus === 'Verified' ? 'Terverifikasi' : ($newStatus === 'Reviewed' ? 'Ditinjau' : 'Terkirim');
         session()->flash('message', "Aktivitas berhasil ditandai sebagai {$statusText}.");

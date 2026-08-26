@@ -68,8 +68,13 @@
                         </nav>
                     </div>
 
-                    <!-- Right User Menu -->
+                    <!-- Right User & Notification Menu -->
                     <div class="flex items-center gap-2 sm:gap-3">
+                        <!-- Real-time Notification Bell Ring Dropdown -->
+                        <livewire:notifications.notification-menu />
+
+                        <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
                         <a href="{{ route('profile') }}" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-50 transition cursor-pointer {{ request()->routeIs('profile') ? 'bg-indigo-50/70 ring-1 ring-indigo-200' : '' }}">
                             <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
                                 {{ strtoupper(substr(auth()->user()->full_name, 0, 2)) }}
