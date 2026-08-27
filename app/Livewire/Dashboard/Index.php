@@ -68,6 +68,10 @@ class Index extends Component
     public ?int $commentingActivityId = null;
     public string $newCommentText = '';
 
+    // Activity IDs currently visible on the page — used to subscribe to real-time
+    // Echo channels so the recipient sees new comments without opening the comment box.
+    public array $visibleActivityIds = [];
+
     /**
      * Standard category options as per specification.
      */
@@ -104,20 +108,19 @@ class Index extends Component
 
     /**
      * Dynamic Echo listeners.
-     * NOTE: Notification bell ($unreadCount, dropdown list) is handled by the
-     * separate NotificationMenu Livewire component which has its own listener —
-     * no need to refresh the entire dashboard for that.
+     * NOTE: Notification bell is handled by the separate NotificationMenu component.
      *
-     * Comment listener: subscribe to the active activity's private channel ONLY
-     * when a comment box is open. Automatically removed when box is closed.
+     * Comment listeners: subscribe to the Echo channel for EVERY activity currently
+     * visible on the page. This ensures BOTH the sender (comment box open) AND the
+     * recipient (just viewing the comment list) receive real-time updates.
+     * The list is rebuilt on every render() as filters / month change.
      */
     public function getListeners(): array
     {
         $listeners = [];
 
-        // Real-time comment updates — only subscribe when a comment box is open
-        if ($this->commentingActivityId) {
-            $listeners["echo-private:activity.{$this->commentingActivityId},.ActivityCommentPosted"] = '$refresh';
+        foreach ($this->visibleActivityIds as $id) {
+            $listeners["echo-private:activity.{$id},.ActivityCommentPosted"] = '$refresh';
         }
 
         return $listeners;
@@ -528,6 +531,11 @@ class Index extends Component
             ->orderBy('activity_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Keep visibleActivityIds in sync so getListeners() subscribes to the right channels.
+        // Use all month activities (not just filtered) so comments arrive even when a search
+        // filter is active and the activity is temporarily hidden from view.
+        $this->visibleActivityIds = $allMonthActivities->pluck('id')->toArray();
 
         // Apply Search & Category filters for timeline
         $filteredActivities = $allMonthActivities;
