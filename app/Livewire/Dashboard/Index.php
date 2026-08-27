@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Events\ActivityCommentPosted;
 use App\Models\Activity;
 use App\Models\ActivityComment;
 use App\Models\User;
@@ -99,6 +100,31 @@ class Index extends Component
         $this->selectedYear = (int) $now->format('Y');
         $this->selectedMonth = (int) $now->format('n');
         $this->activity_date = $now->toDateString();
+    }
+
+    /**
+     * Dynamic Echo listeners.
+     * - Notification bell: listens to the authenticated user's private notification channel.
+     * - Comment section: listens to the specific activity's private channel, but ONLY
+     *   when a comment box is open ($commentingActivityId is set). When the user closes
+     *   the comment box, the listener is removed automatically on the next Livewire render.
+     */
+    public function getListeners(): array
+    {
+        $userId = Auth::id();
+        $listeners = [];
+
+        // Real-time notification badge refresh
+        if ($userId) {
+            $listeners["echo-private:App.Models.User.{$userId},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated"] = '$refresh';
+        }
+
+        // Real-time comment updates — only subscribe when a comment box is open
+        if ($this->commentingActivityId) {
+            $listeners["echo-private:activity.{$this->commentingActivityId},.ActivityCommentPosted"] = '$refresh';
+        }
+
+        return $listeners;
     }
 
     public function setViewMode(string $mode): void
@@ -403,21 +429,27 @@ class Index extends Component
         $currentUser = Auth::user();
         $commentText = trim($this->newCommentText);
 
-        ActivityComment::create([
+        $comment = ActivityComment::create([
             'activity_id' => $activity->id,
-            'user_id' => $currentUser->id,
-            'comment' => $commentText,
+            'user_id'     => $currentUser->id,
+            'comment'     => $commentText,
         ]);
 
-        // Notify activity owner if commenter is someone else
+        // Load relationships so broadcastWith() can serialize them
+        $comment->load('user.role');
+
+        // Broadcast to the other user viewing this activity's comment section
+        broadcast(new ActivityCommentPosted($comment))->toOthers();
+
+        // Notify via queue (bell icon) — activity owner or supervisor
         if ($activity->user_id !== $currentUser->id && $activity->user) {
             $activity->user->notify(new ActivityCommentedNotification($activity, $currentUser, $commentText));
         } elseif ($activity->user_id === $currentUser->id && $currentUser->supervisor_id && $currentUser->supervisor) {
-            // Notify supervisor if employee comments on own activity
             $currentUser->supervisor->notify(new ActivityCommentedNotification($activity, $currentUser, $commentText));
         }
 
-        $this->reset(['newCommentText', 'commentingActivityId']);
+        // Keep comment box open so sender sees their own new comment immediately
+        $this->newCommentText = '';
         session()->flash('message', 'Komentar catatan berhasil ditambahkan.');
     }
 
