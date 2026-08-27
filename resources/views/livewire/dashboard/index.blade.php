@@ -465,33 +465,23 @@
                                     @endif
 
                                     <!-- Supervisor Feedback & Comments (Section 40.3) -->
-                                    <div
-                                        class="pt-2 space-y-3"
-                                        x-data="activityComments({
-                                            activityId: {{ $act->id }},
-                                            initialComments: {{ Js::from($act->comments->map(fn($comment) => [
-                                                'id' => $comment->id,
-                                                'user_name' => $comment->user?->full_name ?? 'User',
-                                                'user_role' => $comment->user?->role?->name ?? 'Supervisor',
-                                                'comment' => $comment->comment,
-                                                'time_ago' => $comment->created_at->diffForHumans(),
-                                            ])) }}
-                                        })"
-                                    >
-                                        <div x-show="comments.length > 0" class="space-y-2">
+                                    <div class="pt-2 space-y-3" data-activity-card="{{ $act->id }}">
+                                        <div id="activity-comments-container-{{ $act->id }}" class="space-y-2 {{ $act->comments->isEmpty() ? 'hidden' : '' }}">
                                             <span class="text-2xs font-bold uppercase tracking-wider text-slate-400">Catatan & Umpan Balik Atasan:</span>
-                                            <template x-for="comment in comments" :key="comment.id">
-                                                <div class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 text-xs text-slate-800 space-y-1 transition-all duration-300">
-                                                    <div class="flex items-center justify-between gap-2">
-                                                        <div class="flex items-center gap-1.5">
-                                                            <span class="font-bold text-indigo-900" x-text="comment.user_name"></span>
-                                                            <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold" x-text="comment.user_role"></span>
+                                            <div id="activity-comments-list-{{ $act->id }}" class="space-y-2">
+                                                @foreach($act->comments as $comment)
+                                                    <div id="comment-item-{{ $comment->id }}" class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 text-xs text-slate-800 space-y-1">
+                                                        <div class="flex items-center justify-between gap-2">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="font-bold text-indigo-900">{{ $comment->user?->full_name ?? 'User' }}</span>
+                                                                <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold">{{ $comment->user?->role?->name ?? 'Supervisor' }}</span>
+                                                            </div>
+                                                            <span class="text-2xs text-slate-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                         </div>
-                                                        <span class="text-2xs text-slate-400" x-text="comment.time_ago"></span>
+                                                        <p class="text-slate-700 leading-relaxed">{{ $comment->comment }}</p>
                                                     </div>
-                                                    <p class="text-slate-700 leading-relaxed" x-text="comment.comment"></p>
-                                                </div>
-                                            </template>
+                                                @endforeach
+                                            </div>
                                         </div>
 
                                         <!-- Add Comment Form for Supervisor / Admin -->
