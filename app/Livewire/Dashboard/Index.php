@@ -413,8 +413,8 @@ class Index extends Component
         // Load relationships so broadcastWith() can serialize them
         $comment->load('user.role');
 
-        // Broadcast to the other user viewing this activity's comment section
-        broadcast(new ActivityCommentPosted($comment))->toOthers();
+        // Broadcast to all users viewing this activity's comment section
+        broadcast(new ActivityCommentPosted($comment));
 
         // Notify via queue (bell icon) — activity owner or supervisor
         if ($activity->user_id !== $currentUser->id && $activity->user) {
