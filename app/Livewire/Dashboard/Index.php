@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -29,14 +30,20 @@ class Index extends Component
     public string $viewMode = 'timeline';
 
     // Month navigation state
+    #[Url(as: 'year')]
     public int $selectedYear;
+
+    #[Url(as: 'month')]
     public int $selectedMonth;
 
     // Employee selector state
+    #[Url(as: 'user_id')]
     public string $selectedUserId = 'myself';
 
     // Search and Category filter
+    #[Url(as: 'q')]
     public string $search = '';
+
     public string $selectedCategory = 'all';
 
     // Modal state
@@ -97,8 +104,14 @@ class Index extends Component
     public function mount(): void
     {
         $now = now();
-        $this->selectedYear = (int) $now->format('Y');
-        $this->selectedMonth = (int) $now->format('n');
+        $this->selectedYear = (int) request()->query('year', $now->format('Y'));
+        $this->selectedMonth = (int) request()->query('month', $now->format('n'));
+        
+        $requestedUserId = request()->query('user_id');
+        if ($requestedUserId) {
+            $this->selectedUserId = (string) $requestedUserId;
+        }
+
         $this->activity_date = $now->toDateString();
     }
 
@@ -482,7 +495,11 @@ class Index extends Component
 
         $targetId = (int) $this->selectedUserId;
 
-        if ($currentUser->hasRole('Administrator') || $currentUser->hasPermission('activity.read.all')) {
+        if ($targetId === (int) $currentUser->id) {
+            return $currentUser->id;
+        }
+
+        if ($currentUser->hasRole(['Administrator', 'Management']) || $currentUser->hasPermission('activity.read.all')) {
             return $targetId;
         }
 
@@ -490,7 +507,9 @@ class Index extends Component
             return $targetId;
         }
 
-        abort(403, 'Anda tidak memiliki izin untuk melihat aktivitas karyawan ini.');
+        // Graceful fallback to self if unauthorized
+        $this->selectedUserId = 'myself';
+        return $currentUser->id;
     }
 
     public function render()
@@ -498,7 +517,7 @@ class Index extends Component
         /** @var User $currentUser */
         $currentUser = Auth::user();
         $effectiveUserId = $this->getEffectiveUserId();
-        $selectedUser = User::with(['position', 'division'])->find($effectiveUserId);
+        $selectedUser = User::with(['position', 'division'])->find($effectiveUserId) ?? $currentUser;
 
         // Fetch activities for selected month & user
         $allMonthActivities = Activity::with(['creator', 'updater', 'verifier', 'comments.user.role'])
@@ -540,9 +559,11 @@ class Index extends Component
         $requestSourceBreakdown = $allMonthActivities->groupBy('requested_by')->map->count();
         $dailyTrend = $allMonthActivities->groupBy(fn ($a) => (int) $a->activity_date->format('j'))->map->count();
 
-        $subordinates = $currentUser->hasPermission('activity.read.subordinate') || $currentUser->hasRole(['Supervisor', 'Administrator', 'Management'])
-            ? $currentUser->subordinates()->with(['position', 'division'])->get()
-            : collect();
+        $subordinates = $currentUser->hasRole(['Administrator', 'Management']) || $currentUser->hasPermission('activity.read.all')
+            ? User::where('status', 'Active')->where('id', '!=', $currentUser->id)->with(['position', 'division'])->orderBy('full_name')->get()
+            : ($currentUser->hasPermission('activity.read.subordinate') || $currentUser->hasRole('Supervisor')
+                ? $currentUser->subordinates()->with(['position', 'division'])->get()
+                : collect());
 
         $selectedMonthDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
         $daysInMonth = $selectedMonthDate->daysInMonth;

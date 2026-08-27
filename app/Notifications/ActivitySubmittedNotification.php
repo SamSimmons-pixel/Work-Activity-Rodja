@@ -44,7 +44,11 @@ class ActivitySubmittedNotification extends Notification implements ShouldQueue
             'sender_name' => $this->employee->full_name,
             'category' => $this->activity->category ?? 'Umum',
             'activity_date' => $this->activity->activity_date->translatedFormat('d F Y'),
-            'url' => route('dashboard', ['user_id' => $this->employee->id]),
+            'url' => route('dashboard', [
+                'user_id' => $this->employee->id,
+                'year' => (int) $this->activity->activity_date->format('Y'),
+                'month' => (int) $this->activity->activity_date->format('n'),
+            ]),
         ];
     }
 

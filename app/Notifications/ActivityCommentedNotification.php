@@ -45,7 +45,11 @@ class ActivityCommentedNotification extends Notification implements ShouldQueue
             'sender_name' => $this->commenter->full_name,
             'sender_role' => $this->commenter->role?->name ?? 'Supervisor',
             'activity_date' => $this->activity->activity_date->translatedFormat('d F Y'),
-            'url' => route('dashboard', ['user_id' => $this->activity->user_id]),
+            'url' => route('dashboard', [
+                'user_id' => $this->activity->user_id,
+                'year' => (int) $this->activity->activity_date->format('Y'),
+                'month' => (int) $this->activity->activity_date->format('n'),
+            ]),
         ];
     }
 
