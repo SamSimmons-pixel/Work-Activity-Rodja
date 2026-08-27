@@ -6,15 +6,15 @@ Dokumentasi ini menjelaskan langkah-langkah lengkap untuk melakukan *deployment*
 
 ## 📌 Ringkasan Arsitektur & Port Server
 
-Aplikasi ini dapat berjalan berdampingan dalam satu server VPS dengan project lain (misal: `running-text` di port 8088):
+Aplikasi ini berjalan pada server Linux dengan konfigurasi port sebagai berikut:
 
 | Layanan / Komponen | Port / Socket | Keterangan |
 | :--- | :--- | :--- |
 | **Aplikasi Web (Nginx)** | `8099` (HTTP) | URL Akses: `http://10.112.115.18:8099` |
-| **Laravel Reverb (WebSocket)** | `8081` (Internal) | Ditangani via Reverse Proxy Nginx pada path `/app` |
+| **Laravel Reverb (WebSocket)** | `8085` (TCP/WS) | Daemon WebSocket Server (`ws://10.112.115.18:8085`) |
 | **PHP-FPM** | `unix:/var/run/php/php8.4-fpm.sock` | Driver pemroses PHP (PHP 8.4) |
 | **Queue Connection** | Database (`jobs` table) | Dikelola oleh daemon Supervisor `work-activity-worker` |
-| **Database** | Mysql / Maria | MySQL `3306` |
+| **Database** | MariaDB / MySQL | Port `3306` |
 
 ---
 
@@ -24,7 +24,7 @@ Pastikan server (Ubuntu / Debian Linux) telah terpasang:
 - **PHP** $\ge$ 8.3 (direkomendasikan 8.4) dengan ekstensi: `php8.4-fpm`, `php8.4-mysql`, `php8.4-mbstring`, `php8.4-xml`, `php8.4-curl`, `php8.4-zip`, `php8.4-bcmath`.
 - **Composer** (PHP Package Manager)
 - **Node.js** & **NPM** (LTS version untuk *build frontend assets*)
-- **Nginx** (Web Server & Reverse Proxy)
+- **Nginx** (Web Server)
 - **Supervisor** (Process Control System untuk background daemons)
 - **Git**
 
@@ -44,7 +44,7 @@ git checkout deploy
 
 ### 2. Pasang Dependensi PHP & Build Frontend Asset
 ```bash
-# Install package PHP TANPA package development (produksi)
+# Install package PHP produksi
 composer install
 
 # Install dependensi JS & compile asset CSS/JS produksi
@@ -74,7 +74,7 @@ APP_DEBUG=false
 APP_URL=http://10.112.115.18:8099
 APP_LOCALE=id
 
-# --- Logging (produksi: error saja, bukan debug) ---
+# --- Logging ---
 LOG_CHANNEL=daily
 LOG_LEVEL=error
 
@@ -96,22 +96,27 @@ FILESYSTEM_DISK=public
 # --- Keamanan ---
 BCRYPT_ROUNDS=12
 
-# --- Laravel Reverb (WebSocket) ---
+# --- Laravel Reverb (WebSocket Server) ---
 BROADCAST_CONNECTION=reverb
 REVERB_APP_ID=100001
 REVERB_APP_KEY=workactivityappkey
 REVERB_APP_SECRET=workactivityappsecret
-REVERB_HOST="10.112.115.18"
-REVERB_PORT=8081
+
+# Backend PHP berkomunikasi langsung ke Reverb daemon lokal:
+REVERB_HOST="127.0.0.1"
+REVERB_PORT=8085
 REVERB_SCHEME="http"
 
+# Frontend Browser berkomunikasi dari luar via IP server di port 8085:
 VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
-VITE_REVERB_HOST="${REVERB_HOST}"
-VITE_REVERB_PORT="${REVERB_PORT}"
-VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+VITE_REVERB_HOST="10.112.115.18"
+VITE_REVERB_PORT=8085
+VITE_REVERB_SCHEME="http"
 ```
 
-> ⚠️ **Penting**: Ganti nilai `REVERB_APP_KEY`, `REVERB_APP_SECRET`, `DB_USERNAME`, dan `DB_PASSWORD` dengan nilai acak yang unik dan aman di lingkungan produksi.
+> ⚠️ **Catatan Penting**:
+> 1. Variabel `VITE_*` di-compile langsung ke file JS saat `npm run build`. Setiap kali mengubah nilai `.env`, wajib jalankan `npm run build` ulang di server.
+> 2. `QUEUE_CONNECTION` harus bernilai `database` (bukan nama database).
 
 ---
 
@@ -129,6 +134,17 @@ chmod -R 775 storage bootstrap/cache database
 chown -R www-data:www-data storage bootstrap/cache database
 ```
 
+---
+
+### 5. Konfigurasi Firewall Server (UFW)
+Pastikan port aplikasi (8099) dan WebSocket Reverb (8085) diizinkan:
+```bash
+sudo ufw allow 8099/tcp
+sudo ufw allow 8085/tcp
+sudo ufw reload
+```
+
+---
 
 ## ⚙️ Konfigurasi Supervisor (Daemons)
 
@@ -141,7 +157,7 @@ sudo nano /etc/supervisor/conf.d/work-activity-reverb.conf
 Isi dengan:
 ```ini
 [program:work-activity-reverb]
-command=php /var/www/Work-Activity-Rodja/artisan reverb:start --host="0.0.0.0" --port=8081
+command=php /var/www/Work-Activity-Rodja/artisan reverb:start --host="0.0.0.0" --port=8085
 autostart=true
 autorestart=true
 user=www-data
@@ -149,6 +165,7 @@ redirect_stderr=true
 stdout_logfile=/var/www/Work-Activity-Rodja/storage/logs/reverb.log
 stopwaitsecs=3600
 ```
+> ⚠️ **Penting**: Gunakan `--host="0.0.0.0"` agar Reverb dapat menerima koneksi WebSocket dari browser klien luar, dan `--port=8085`.
 
 ---
 
@@ -182,9 +199,9 @@ sudo supervisorctl status
 
 **Output status yang diharapkan:**
 ```
-work-activity-reverb            RUNNING   pid 1234, uptime 0:00:10
-work-activity-worker:work-activity-worker_00 RUNNING   pid 1235, uptime 0:00:10
-work-activity-worker:work-activity-worker_01 RUNNING   pid 1236, uptime 0:00:10
+work-activity-reverb                          RUNNING   pid 1234, uptime 0:00:10
+work-activity-worker:work-activity-worker_00  RUNNING   pid 1235, uptime 0:00:10
+work-activity-worker:work-activity-worker_01  RUNNING   pid 1236, uptime 0:00:10
 ```
 
 ---
@@ -209,16 +226,6 @@ server {
     # ── Routing Utama Laravel ────────────────────────────────────────────────
     location / {
         try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    # ── Reverse Proxy WebSocket Laravel Reverb ──────────────────────────────
-    location /app {
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_pass http://127.0.0.1:8081;
     }
 
     # ── Pemrosesan PHP FastCGI ──────────────────────────────────────────────
@@ -251,7 +258,7 @@ Aktifkan mode perawatan agar pengguna menerima halaman informatif saat proses up
 # Aktifkan maintenance mode SEBELUM update
 php artisan down --retry=60
 
-# Lakukan proses update (lihat bagian Deploy Ulang di bawah)
+# Lakukan proses update
 # ...
 
 # Nonaktifkan maintenance mode SETELAH update selesai
@@ -262,29 +269,22 @@ php artisan up
 
 ## 🔄 Prosedur Update / Deploy Ulang (Continuous Deployment)
 
-Setiap kali ada pembaruan kode yang di-*push* ke branch `deploy`, ikuti urutan berikut:
+Setiap kali ada pembaruan kode yang di-*push* ke branch `deploy`, jalankan urutan perintah berikut:
 
 ```bash
 cd /var/www/Work-Activity-Rodja
 
-# 0. Aktifkan maintenance mode
-php artisan down --retry=60
-
 # 1. Ambil kode terbaru
 git pull origin deploy
 
-# 2. Update dependensi PHP & Rebuild Assets
-composer install --no-dev --optimize-autoloader
-npm install
+# 2. Update dependensi & Rebuild Bundle Frontend
+composer install
 npm run build
 
-# 3. Backup database SEBELUM migrasi (pencegahan data loss)
-mysqldump -u [DB_USERNAME] -p [DB_DATABASE] > /var/backups/work_activity_$(date +%Y%m%d_%H%M%S).sql
+# 3. Jalankan migrasi database baru
+php artisan migrate
 
-# 4. Jalankan migrasi database baru
-php artisan migrate --force
-
-# 5. Refresh cache aplikasi
+# 4. Refresh cache aplikasi
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
@@ -292,12 +292,9 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# 6. Restart worker & websocket agar membaca kode terbaru
+# 5. Restart worker & websocket agar membaca kode terbaru
 sudo supervisorctl restart work-activity-worker:*
 sudo supervisorctl restart work-activity-reverb
-
-# 7. Nonaktifkan maintenance mode
-php artisan up
 ```
 
 ---
@@ -311,54 +308,6 @@ Setelah menjalankan `php artisan migrate --force --seed`, akun berikut siap digu
 | **`admin`** | `admin123` | Administrator | Akses penuh manajemen user, role, permission, divisi, & posisi. |
 | **`budi`** | `password123` | Supervisor | Kepala Divisi IT. Dapat memverifikasi aktivitas bawahan & review kinerja. |
 | **`ahmad`** | `password123` | Employee | IT Support (Bawahan Budi). Mencatat aktivitas harian & menerima review. |
-
-> ⚠️ **Catatan Keamanan**: Segera ganti password akun administrator setelah login pertama kali di lingkungan produksi.
-
----
-
-## 🔍 Panduan Troubleshooting
-
-1. **Error: 413 Request Entity Too Large saat upload lampiran**
-   - Pastikan di file konfigurasi Nginx terdapat `client_max_body_size 20M;`.
-   - Pastikan juga di `php.ini` nilai `upload_max_filesize = 20M` dan `post_max_size = 25M`.
-
-2. **Notifikasi real-time tidak muncul otomatis tanpa refresh**
-   - Cek apakah daemon Supervisor Reverb dan Worker berjalan: `sudo supervisorctl status`.
-   - Cek log Reverb: `tail -f /var/www/Work-Activity-Rodja/storage/logs/reverb.log`.
-   - Cek log antrean: `tail -f /var/www/Work-Activity-Rodja/storage/logs/worker.log`.
-
-3. **Error Permission 500 saat menulis log atau upload**
-   - Jalankan ulang hak akses:
-     ```bash
-     sudo chown -R www-data:www-data storage bootstrap/cache database
-     sudo chmod -R 775 storage bootstrap/cache database
-     ```
-
-4. **Worker atau Reverb tidak bisa di-restart**
-   - Pastikan nama program supervisor sesuai: `work-activity-reverb` dan `work-activity-worker`.
-   - Cek konfigurasi: `sudo supervisorctl reread && sudo supervisorctl update`.
-   - Lihat log Supervisor: `sudo tail -f /var/log/supervisor/supervisord.log`.
-
----
-
-## 💾 Backup & Pemulihan Database
-
-### Backup Manual
-```bash
-# Backup seluruh database
-mysqldump -u [DB_USERNAME] -p [DB_DATABASE] > /var/backups/work_activity_manual.sql
-
-# Restore dari backup
-mysql -u [DB_USERNAME] -p [DB_DATABASE] < /var/backups/work_activity_manual.sql
-```
-
-### Backup Otomatis (Cron Harian)
-Tambahkan entri cron berikut (`sudo crontab -e`) untuk backup otomatis setiap hari pukul 02.00:
-```bash
-0 2 * * * mysqldump -u [DB_USERNAME] -p'[DB_PASSWORD]' [DB_DATABASE] > /var/backups/work_activity_$(date +\%Y\%m\%d).sql 2>/dev/null
-# Hapus backup lebih dari 30 hari
-0 3 * * * find /var/backups/ -name 'work_activity_*.sql' -mtime +30 -delete
-```
 
 ---
 
