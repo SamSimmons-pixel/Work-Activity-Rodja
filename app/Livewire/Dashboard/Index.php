@@ -104,20 +104,16 @@ class Index extends Component
 
     /**
      * Dynamic Echo listeners.
-     * - Notification bell: listens to the authenticated user's private notification channel.
-     * - Comment section: listens to the specific activity's private channel, but ONLY
-     *   when a comment box is open ($commentingActivityId is set). When the user closes
-     *   the comment box, the listener is removed automatically on the next Livewire render.
+     * NOTE: Notification bell ($unreadCount, dropdown list) is handled by the
+     * separate NotificationMenu Livewire component which has its own listener —
+     * no need to refresh the entire dashboard for that.
+     *
+     * Comment listener: subscribe to the active activity's private channel ONLY
+     * when a comment box is open. Automatically removed when box is closed.
      */
     public function getListeners(): array
     {
-        $userId = Auth::id();
         $listeners = [];
-
-        // Real-time notification badge refresh
-        if ($userId) {
-            $listeners["echo-private:App.Models.User.{$userId},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated"] = '$refresh';
-        }
 
         // Real-time comment updates — only subscribe when a comment box is open
         if ($this->commentingActivityId) {
