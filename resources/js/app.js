@@ -137,7 +137,7 @@ function appendNotificationItem(notif) {
     item.className = 'group relative flex items-start gap-3 p-3.5 transition cursor-pointer bg-indigo-50/50 hover:bg-indigo-50/80 border-l-4 border-indigo-600';
     item.innerHTML = `
         <div class="shrink-0 mt-0.5">${iconHtml}</div>
-        <div class="flex-1 min-w-0" onclick="${notif.url ? `window.readAndRedirect('${notif.id}', '${notif.url}')` : ''}">
+        <div class="flex-1 min-w-0" onclick="window.readAndRedirect('${notif.id}', '${notif.url || ''}')">
             <div class="flex items-center justify-between gap-1">
                 <h4 class="text-xs font-black text-slate-900 truncate">${notif.title || 'Pemberitahuan Baru'}</h4>
                 <span class="text-3xs text-slate-400 shrink-0">Baru saja</span>
