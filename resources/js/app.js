@@ -21,7 +21,7 @@ window.readAndRedirect = function (notifId, url) {
     const component = window.Livewire?.all()?.find(c => c.name === 'notifications.notification-menu');
 
     if (component) {
-        component.markAsRead(notifId, url);
+        component.$wire.markAsRead(notifId, url);
     } else if (url) {
         window.location.href = url;
     }
