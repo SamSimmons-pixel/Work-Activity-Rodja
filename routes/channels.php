@@ -40,10 +40,16 @@ Broadcast::channel('activity.{activityId}', function ($user, $activityId) {
         return true;
     }
 
-    // Administrator can access any activity channel
-    if ($user->hasRole('Administrator')) {
+    // Subordinate check for supervisors
+    if (method_exists($user, 'getSubordinateIds') && in_array((int) $activity->user_id, $user->getSubordinateIds())) {
+        return true;
+    }
+
+    // Administrator or Management
+    if ($user->hasRole(['Administrator', 'Management']) || $user->hasPermission('activity.read.all')) {
         return true;
     }
 
     return false;
 });
+

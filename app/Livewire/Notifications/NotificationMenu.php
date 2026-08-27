@@ -68,13 +68,7 @@ class NotificationMenu extends Component
 
     public function getListeners(): array
     {
-        $userId = Auth::id();
-        if (!$userId) {
-            return ['notification-received' => '$refresh'];
-        }
-
         return [
-            "echo-private:App.Models.User.{$userId},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" => '$refresh',
             'notification-received' => '$refresh',
         ];
     }
