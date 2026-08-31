@@ -398,41 +398,47 @@
                                     </div>
 
                                      <!-- Activity Content -->
-                                     <div class="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs">
-                                         <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                             </svg>
-                                             <span>Aktivitas / Uraian Pekerjaan</span>
-                                         </h4>
-                                         <div class="text-sm text-slate-800 leading-relaxed prose-content">
+                                     <div class="bg-white rounded-xl border shadow-2xs border-slate-300">
+                                         <div class="border-b border-slate-300 my-3.5 pb-2">
+                                             <h4 class="text-xs font-bold mx-3.5 text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                                                 <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                 </svg>
+                                                 <span>Aktivitas / Uraian Pekerjaan</span>
+                                             </h4>
+                                         </div>
+                                         <div class="m-3.5 text-sm text-slate-800 leading-relaxed prose-content">
                                              {!! $act->activity !!}
                                          </div>
                                      </div>
 
                                      <!-- Result / Outcome -->
-                                     <div class="bg-slate-50/80 rounded-xl p-3.5 border border-slate-200/90 shadow-2xs">
-                                         <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                             <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                             </svg>
-                                             <span>Hasil / Luaran Pekerjaan</span>
-                                         </h4>
-                                         <div class="text-sm text-slate-700 leading-relaxed prose-content">
+                                     <div class="bg-slate-50/80 rounded-xl border border-slate-300 shadow-2xs">
+                                         <div class="border-b border-slate-300 my-3.5 pb-2">
+                                             <h4 class="text-xs font-bold mx-3.5 text-slate-600 uppercase tracking-wider flex items-center gap-1">
+                                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                 </svg>
+                                                 <span>Hasil / Luaran Pekerjaan</span>
+                                             </h4>
+                                         </div>
+                                         <div class="m-3.5 text-sm text-slate-700 leading-relaxed prose-content">
                                              {!! $act->result !!}
                                          </div>
                                      </div>
 
                                      <!-- Constraint / Issue (Optional) -->
                                      @if(!empty($act->constraint))
-                                         <div class="bg-amber-50/70 rounded-xl p-3.5 border border-amber-200/90 shadow-2xs">
-                                             <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                                 <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                 </svg>
-                                                 <span>Kendala / Masalah yang Ditemui</span>
-                                             </h4>
-                                             <div class="text-sm text-amber-900 leading-relaxed prose-content">
+                                         <div class="bg-amber-50/70 rounded-xl border border-amber-200/90 shadow-2xs">
+                                             <div class="border-b border-amber-200/70 m-3.5 pb-2">
+                                                 <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1">
+                                                     <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                     </svg>
+                                                     <span>Kendala / Masalah yang Ditemui</span>
+                                                 </h4>
+                                             </div>
+                                             <div class="m-3.5 text-sm text-amber-900 leading-relaxed prose-content">
                                                  {!! $act->constraint !!}
                                              </div>
                                          </div>
@@ -801,7 +807,7 @@
                         <div wire:ignore>
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
                                 Deskripsi Aktivitas / Pekerjaan <span class="text-rose-500">*</span>
-                            </label>
+                            </label>  
                             <div id="editor-activity" class="bg-white rounded-xl min-h-[120px] text-sm"></div>
                         </div>
                         @error('activity') <p class="text-xs text-rose-600">{{ $message }}</p> @enderror
