@@ -3,6 +3,7 @@
 namespace App\Livewire\Dashboard;
 
 use App\Events\ActivityCommentPosted;
+use App\Events\ActivityCommentUpdated;
 use App\Models\Activity;
 use App\Models\ActivityComment;
 use App\Models\User;
@@ -74,6 +75,8 @@ class Index extends Component
     // Comments state
     public ?int $commentingActivityId = null;
     public string $newCommentText = '';
+    public ?int $editingCommentId = null;
+    public string $editCommentText = '';
 
     /**
      * Standard category options as per specification.
@@ -436,9 +439,61 @@ class Index extends Component
             $currentUser->supervisor->notify(new ActivityCommentedNotification($activity, $currentUser, $commentText));
         }
 
-        // Keep comment box open so sender sees their own new comment immediately
+        // Auto-close comment form after successful submission
         $this->newCommentText = '';
+        $this->commentingActivityId = null;
         session()->flash('message', 'Komentar catatan berhasil ditambahkan.');
+    }
+
+    public function startEditComment(int $commentId): void
+    {
+        $comment = ActivityComment::findOrFail($commentId);
+        $currentUser = Auth::user();
+
+        if ($comment->user_id !== $currentUser->id) {
+            session()->flash('error', 'Anda hanya dapat mengubah komentar Anda sendiri.');
+            return;
+        }
+
+        $this->editingCommentId = $commentId;
+        $this->editCommentText = $comment->comment;
+    }
+
+    public function cancelEditComment(): void
+    {
+        $this->editingCommentId = null;
+        $this->editCommentText = '';
+    }
+
+    public function updateComment(): void
+    {
+        if (!$this->editingCommentId) {
+            return;
+        }
+
+        $this->validate([
+            'editCommentText' => ['required', 'string', 'min:2', 'max:2000'],
+        ]);
+
+        $comment = ActivityComment::findOrFail($this->editingCommentId);
+        $currentUser = Auth::user();
+
+        if ($comment->user_id !== $currentUser->id) {
+            session()->flash('error', 'Anda hanya dapat mengubah komentar Anda sendiri.');
+            return;
+        }
+
+        $comment->update([
+            'comment' => trim($this->editCommentText),
+        ]);
+
+        $comment->load('user.role');
+
+        // Broadcast real-time update to all viewers
+        broadcast(new ActivityCommentUpdated($comment));
+
+        $this->cancelEditComment();
+        session()->flash('message', 'Komentar catatan berhasil diperbarui.');
     }
 
     public function toggleCommentBox(int $activityId): void
@@ -549,9 +604,11 @@ class Index extends Component
         $completedActivities = $allMonthActivities->whereIn('status', ['Submitted', 'Reviewed', 'Verified'])->count();
         $openIssuesCount = $allMonthActivities->filter(fn ($act) => !empty($act->constraint))->count();
 
-        // Group filtered activities by date
+        // Group filtered activities by date (Hijriah + Masehi)
         $groupedActivities = $filteredActivities->groupBy(function ($activity) {
-            return $activity->activity_date->translatedFormat('l, d F Y');
+            $hijri = \App\Services\HijriCalendarService::getHijriDate($activity->activity_date);
+            $masehi = $activity->activity_date->translatedFormat('l, d F Y');
+            return "{$hijri} • {$masehi}";
         });
 
         // Analytics Computations

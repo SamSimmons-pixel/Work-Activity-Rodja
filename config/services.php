@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'hijri' => [
+        'ticker_url' => env('HIJRI_TICKER_API_URL', 'http://10.112.115.18:8088/api/vmix/hijri-ticker'),
+    ],
+
 ];

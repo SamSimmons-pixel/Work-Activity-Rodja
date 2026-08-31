@@ -397,149 +397,206 @@
                                         </div>
                                     </div>
 
-                                    <!-- Activity Content -->
-                                    <div>
-                                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Aktivitas / Pekerjaan</h4>
-                                        <div class="text-sm text-slate-800 leading-relaxed prose-content">
-                                            {!! $act->activity !!}
-                                        </div>
-                                    </div>
+                                     <!-- Activity Content -->
+                                     <div class="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs">
+                                         <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                             </svg>
+                                             <span>Aktivitas / Uraian Pekerjaan</span>
+                                         </h4>
+                                         <div class="text-sm text-slate-800 leading-relaxed prose-content">
+                                             {!! $act->activity !!}
+                                         </div>
+                                     </div>
 
-                                    <!-- Result / Outcome -->
-                                    <div class="bg-slate-50/80 rounded-xl p-3.5 border border-slate-100">
-                                        <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            <span>Hasil / Luaran Pekerjaan</span>
-                                        </h4>
-                                        <div class="text-sm text-slate-700 leading-relaxed prose-content">
-                                            {!! $act->result !!}
-                                        </div>
-                                    </div>
+                                     <!-- Result / Outcome -->
+                                     <div class="bg-slate-50/80 rounded-xl p-3.5 border border-slate-200/90 shadow-2xs">
+                                         <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                             <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                             </svg>
+                                             <span>Hasil / Luaran Pekerjaan</span>
+                                         </h4>
+                                         <div class="text-sm text-slate-700 leading-relaxed prose-content">
+                                             {!! $act->result !!}
+                                         </div>
+                                     </div>
 
-                                    <!-- Constraint / Issue (Optional) -->
-                                    @if(!empty($act->constraint))
-                                        <div class="bg-amber-50/70 rounded-xl p-3.5 border border-amber-200/70">
-                                            <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                </svg>
-                                                <span>Kendala / Masalah yang Ditemui</span>
-                                            </h4>
-                                            <div class="text-sm text-amber-900 leading-relaxed prose-content">
-                                                {!! $act->constraint !!}
-                                            </div>
-                                        </div>
-                                    @endif
+                                     <!-- Constraint / Issue (Optional) -->
+                                     @if(!empty($act->constraint))
+                                         <div class="bg-amber-50/70 rounded-xl p-3.5 border border-amber-200/90 shadow-2xs">
+                                             <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                                 <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                 </svg>
+                                                 <span>Kendala / Masalah yang Ditemui</span>
+                                             </h4>
+                                             <div class="text-sm text-amber-900 leading-relaxed prose-content">
+                                                 {!! $act->constraint !!}
+                                             </div>
+                                         </div>
+                                     @endif
 
-                                    <!-- Attachment Section (Section 40.5) -->
-                                    @if($act->attachment_path)
-                                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between gap-3">
-                                            <div class="flex items-center gap-2.5 min-w-0">
-                                                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
-                                                    @if($act->hasImageAttachment())
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                        </svg>
-                                                    @else
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                        </svg>
-                                                    @endif
-                                                </div>
-                                                <div class="truncate">
-                                                    <span class="text-xs font-bold text-slate-800 block truncate">{{ $act->attachment_name ?? 'Lampiran Dokumen' }}</span>
-                                                    <span class="text-2xs text-slate-400">Bukti Pendukung Pekerjaan</span>
-                                                </div>
-                                            </div>
+                                     <!-- Attachment Section (Section 40.5) -->
+                                     @if($act->attachment_path)
+                                         <div class="p-3 bg-slate-50/90 rounded-xl border border-slate-200 flex items-center justify-between gap-3 shadow-2xs">
+                                             <div class="flex items-center gap-2.5 min-w-0">
+                                                 <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                                                     @if($act->hasImageAttachment())
+                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                         </svg>
+                                                     @else
+                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                         </svg>
+                                                     @endif
+                                                 </div>
+                                                 <div class="truncate">
+                                                     <span class="text-xs font-bold text-slate-800 block truncate">{{ $act->attachment_name ?? 'Lampiran Dokumen' }}</span>
+                                                     <span class="text-2xs text-slate-400">Bukti Pendukung Pekerjaan</span>
+                                                 </div>
+                                             </div>
 
-                                            <a
-                                                href="{{ Storage::url($act->attachment_path) }}"
-                                                target="_blank"
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-slate-50 transition shrink-0 cursor-pointer shadow-2xs"
-                                            >
+                                             <a
+                                                 href="{{ Storage::url($act->attachment_path) }}"
+                                                 target="_blank"
+                                                 class="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-slate-50 transition shrink-0 cursor-pointer shadow-2xs"
+                                             >
                                                 <span>Lihat / Unduh</span>
-                                            </a>
-                                        </div>
-                                    @endif
+                                             </a>
+                                         </div>
+                                     @endif
 
-                                    <!-- Supervisor Feedback & Comments (Section 40.3) -->
-                                    <div class="pt-2 space-y-3" data-activity-card="{{ $act->id }}">
-                                        <div id="activity-comments-container-{{ $act->id }}" class="space-y-2 {{ $act->comments->isEmpty() ? 'hidden' : '' }}">
-                                            <span class="text-2xs font-bold uppercase tracking-wider text-slate-400">Catatan & Umpan Balik Atasan:</span>
-                                            <div id="activity-comments-list-{{ $act->id }}" class="space-y-2">
-                                                @foreach($act->comments as $comment)
-                                                    <div id="comment-item-{{ $comment->id }}" class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 text-xs text-slate-800 space-y-1">
-                                                        <div class="flex items-center justify-between gap-2">
-                                                            <div class="flex items-center gap-1.5">
-                                                                <span class="font-bold text-indigo-900">{{ $comment->user?->full_name ?? 'User' }}</span>
-                                                                <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold">{{ $comment->user?->role?->name ?? 'Supervisor' }}</span>
-                                                            </div>
-                                                            <span class="text-2xs text-slate-400">{{ $comment->created_at->diffForHumans() }}</span>
-                                                        </div>
-                                                        <p class="text-slate-700 leading-relaxed">{{ $comment->comment }}</p>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
+                                     <!-- Supervisor Feedback & Comments (Section 40.3) -->
+                                     <div class="pt-2 space-y-3" data-activity-card="{{ $act->id }}">
+                                         <div id="activity-comments-container-{{ $act->id }}" class="space-y-2 {{ $act->comments->isEmpty() ? 'hidden' : '' }}">
+                                             <span class="text-2xs font-bold uppercase tracking-wider text-slate-400">Catatan & Umpan Balik Atasan:</span>
+                                             <div id="activity-comments-list-{{ $act->id }}" class="space-y-2">
+                                                 @foreach($act->comments as $comment)
+                                                     <div id="comment-item-{{ $comment->id }}" class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 text-xs text-slate-800 space-y-1">
+                                                         <div class="flex items-center justify-between gap-2">
+                                                             <div class="flex items-center gap-1.5">
+                                                                 <span class="font-bold text-indigo-900">{{ $comment->user?->full_name ?? 'User' }}</span>
+                                                                 <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold">{{ $comment->user?->role?->name ?? 'Supervisor' }}</span>
+                                                             </div>
+                                                             <div class="flex items-center gap-2">
+                                                                 <span class="text-2xs text-slate-400 comment-time">
+                                                                     {{ $comment->created_at->diffForHumans() }}
+                                                                     @if($comment->updated_at && $comment->updated_at->ne($comment->created_at))
+                                                                         <span class="text-3xs italic text-slate-400 font-normal">(diedit)</span>
+                                                                     @endif
+                                                                 </span>
+                                                                 @if($comment->user_id === $currentUser->id)
+                                                                     @if($editingCommentId !== $comment->id)
+                                                                         <button
+                                                                             wire:click="startEditComment({{ $comment->id }})"
+                                                                             type="button"
+                                                                             title="Edit Komentar"
+                                                                             class="text-indigo-600 hover:text-indigo-800 text-2xs font-medium inline-flex items-center gap-0.5 cursor-pointer ml-1"
+                                                                         >
+                                                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                             </svg>
+                                                                             <span>Edit</span>
+                                                                         </button>
+                                                                     @endif
+                                                                 @endif
+                                                             </div>
+                                                         </div>
 
-                                        <!-- Add Comment Form for Supervisor / Admin -->
-                                        @if($currentUser->hasRole('Administrator') || in_array($act->user_id, $currentUser->getSubordinateIds()) || $act->user_id === $currentUser->id)
-                                            <div>
-                                                @if($commentingActivityId === $act->id)
-                                                    <div class="mt-2 bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2">
-                                                        <textarea
-                                                            wire:model="newCommentText"
-                                                            rows="2"
-                                                            placeholder="Tuliskan catatan evaluasi atau umpan balik untuk aktivitas ini..."
-                                                            class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 outline-none"
-                                                        ></textarea>
-                                                        @error('newCommentText') <p class="text-xs text-rose-600">{{ $message }}</p> @enderror
+                                                         @if($editingCommentId === $comment->id)
+                                                             <div class="mt-2 space-y-2">
+                                                                 <textarea
+                                                                     wire:model="editCommentText"
+                                                                     rows="2"
+                                                                     placeholder="Edit catatan atau komentar..."
+                                                                     class="block w-full px-3 py-2 bg-white border border-indigo-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-200 focus:border-indigo-600 outline-none"
+                                                                 ></textarea>
+                                                                 @error('editCommentText') <p class="text-xs text-rose-600">{{ $message }}</p> @enderror
 
-                                                        <div class="flex items-center justify-end gap-2">
-                                                            <button
-                                                                wire:click="toggleCommentBox({{ $act->id }})"
-                                                                type="button"
-                                                                class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-800 font-medium cursor-pointer"
-                                                            >
-                                                                Batal
-                                                            </button>
-                                                            <button
-                                                                wire:click="addComment({{ $act->id }})"
-                                                                type="button"
-                                                                class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition cursor-pointer"
-                                                            >
-                                                                Kirim Catatan
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <button
-                                                        wire:click="toggleCommentBox({{ $act->id }})"
-                                                        type="button"
-                                                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition cursor-pointer"
-                                                    >
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                                        </svg>
-                                                        <span>Tambah Catatan / Komentar</span>
-                                                    </button>
-                                                @endif
-                                            </div>
-                                        @endif
-                                    </div>
+                                                                 <div class="flex items-center justify-end gap-2">
+                                                                     <button
+                                                                         wire:click="cancelEditComment"
+                                                                         type="button"
+                                                                         class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-800 font-medium cursor-pointer"
+                                                                     >
+                                                                         Batal
+                                                                     </button>
+                                                                     <button
+                                                                         wire:click="updateComment"
+                                                                         type="button"
+                                                                         class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition cursor-pointer"
+                                                                     >
+                                                                         Simpan Perubahan
+                                                                     </button>
+                                                                 </div>
+                                                             </div>
+                                                         @else
+                                                             <p class="text-slate-700 leading-relaxed comment-text-content">{{ $comment->comment }}</p>
+                                                         @endif
+                                                     </div>
+                                                 @endforeach
+                                             </div>
+                                         </div>
 
-                                    <!-- Audit Trail Footer (Section 17) -->
-                                    <div class="flex flex-wrap items-center justify-between text-2xs text-slate-400 pt-2 border-t border-slate-100 gap-2">
-                                        <span>Dicatat pada: {{ $act->created_at->translatedFormat('d M Y, H:i') }}</span>
-                                        @if($act->verifier)
-                                            <span class="text-indigo-600 font-medium">Diverifikasi oleh {{ $act->verifier->full_name }} ({{ $act->verified_at?->translatedFormat('d M Y') }})</span>
-                                        @elseif($act->updated_at && $act->updated_at->ne($act->created_at))
-                                            <span>Terakhir diperbarui: {{ $act->updated_at->translatedFormat('d M Y, H:i') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
+                                         <!-- Add Comment Form for Supervisor / Admin -->
+                                         @if($currentUser->hasRole('Administrator') || in_array($act->user_id, $currentUser->getSubordinateIds()) || $act->user_id === $currentUser->id)
+                                             <div>
+                                                 @if($commentingActivityId === $act->id)
+                                                     <div class="mt-2 bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2">
+                                                         <textarea
+                                                             wire:model="newCommentText"
+                                                             rows="2"
+                                                             placeholder="Tuliskan catatan evaluasi atau umpan balik untuk aktivitas ini..."
+                                                             class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 outline-none"
+                                                         ></textarea>
+                                                         @error('newCommentText') <p class="text-xs text-rose-600">{{ $message }}</p> @enderror
+
+                                                         <div class="flex items-center justify-end gap-2">
+                                                             <button
+                                                                 wire:click="toggleCommentBox({{ $act->id }})"
+                                                                 type="button"
+                                                                 class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-800 font-medium cursor-pointer"
+                                                             >
+                                                                 Batal
+                                                             </button>
+                                                             <button
+                                                                 wire:click="addComment({{ $act->id }})"
+                                                                 type="button"
+                                                                 class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition cursor-pointer"
+                                                             >
+                                                                 Kirim Catatan
+                                                             </button>
+                                                         </div>
+                                                     </div>
+                                                 @else
+                                                     <button
+                                                         wire:click="toggleCommentBox({{ $act->id }})"
+                                                         type="button"
+                                                         class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition cursor-pointer"
+                                                     >
+                                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                                         </svg>
+                                                         <span>Tambah Catatan / Komentar</span>
+                                                     </button>
+                                                 @endif
+                                             </div>
+                                         @endif
+                                     </div>
+
+                                     <!-- Audit Trail Footer (Section 17) -->
+                                     <div class="flex flex-wrap items-center justify-between text-2xs text-slate-400 pt-2 border-t border-slate-100 gap-2">
+                                         <span>Dicatat pada: {{ \App\Services\HijriCalendarService::getHijriDate($act->created_at) }} • {{ $act->created_at->translatedFormat('d M Y, H:i') }}</span>
+                                         @if($act->verifier)
+                                             <span class="text-indigo-600 font-medium">Diverifikasi oleh {{ $act->verifier->full_name }} ({{ \App\Services\HijriCalendarService::getHijriDate($act->verified_at) }} • {{ $act->verified_at?->translatedFormat('d M Y') }})</span>
+                                         @elseif($act->updated_at && $act->updated_at->ne($act->created_at))
+                                             <span>Terakhir diperbarui: {{ \App\Services\HijriCalendarService::getHijriDate($act->updated_at) }} • {{ $act->updated_at->translatedFormat('d M Y, H:i') }}</span>
+                                         @endif
+                                     </div>
+                                 </div>
                             @endforeach
                         </div>
                     </div>

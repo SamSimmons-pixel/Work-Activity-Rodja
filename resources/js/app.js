@@ -58,12 +58,33 @@ function appendActivityComment(data) {
                 <span class="font-bold text-indigo-900">${data.commenter_name || 'User'}</span>
                 <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold">${data.commenter_role || 'Supervisor'}</span>
             </div>
-            <span class="text-2xs text-slate-400">Baru saja</span>
+            <span class="text-2xs text-slate-400 comment-time">Baru saja</span>
         </div>
-        <p class="text-slate-700 leading-relaxed">${data.comment || ''}</p>
+        <p class="text-slate-700 leading-relaxed comment-text-content">${data.comment || ''}</p>
     `;
 
     list.appendChild(item);
+}
+
+/**
+ * Real-time DOM update for Activity Comments (Vanilla JS)
+ */
+function updateActivityComment(data) {
+    if (!data.comment_id) return;
+    const commentItem = document.getElementById('comment-item-' + data.comment_id);
+    if (!commentItem) return;
+
+    // Update comment body text
+    const textEl = commentItem.querySelector('.comment-text-content');
+    if (textEl) {
+        textEl.textContent = data.comment || '';
+    }
+
+    // Update timestamp with (diedit) indicator
+    const timeEl = commentItem.querySelector('.comment-time');
+    if (timeEl) {
+        timeEl.innerHTML = `Baru saja <span class="text-3xs italic text-slate-400 font-normal">(diedit)</span>`;
+    }
 }
 
 /**
@@ -188,6 +209,9 @@ function initEchoListeners() {
             window.Echo.private(`activity.${activityId}`)
                 .listen('.ActivityCommentPosted', (data) => {
                     appendActivityComment(data);
+                })
+                .listen('.ActivityCommentUpdated', (data) => {
+                    updateActivityComment(data);
                 });
         }
     });
