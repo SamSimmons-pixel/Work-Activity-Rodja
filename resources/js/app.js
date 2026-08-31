@@ -46,6 +46,10 @@ function appendActivityComment(data) {
         return;
     }
 
+    const userIdMeta = document.querySelector('meta[name="auth-user-id"]');
+    const authUserId = userIdMeta ? userIdMeta.content : null;
+    const isOwnComment = data.user_id && authUserId && String(data.user_id) === String(authUserId);
+
     // Create new comment item element
     const item = document.createElement('div');
     if (data.comment_id) {
@@ -58,7 +62,22 @@ function appendActivityComment(data) {
                 <span class="font-bold text-indigo-900">${data.commenter_name || 'User'}</span>
                 <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold">${data.commenter_role || 'Supervisor'}</span>
             </div>
-            <span class="text-2xs text-slate-400 comment-time">Baru saja</span>
+            <div class="flex items-center gap-2">
+                <span class="text-2xs text-slate-400 comment-time">Baru saja</span>
+                ${isOwnComment ? `
+                    <button
+                        wire:click="startEditComment(${data.comment_id})"
+                        type="button"
+                        title="Edit Komentar"
+                        class="text-indigo-600 hover:text-indigo-800 text-2xs font-medium inline-flex items-center gap-0.5 cursor-pointer ml-1"
+                    >
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span>Edit</span>
+                    </button>
+                ` : ''}
+            </div>
         </div>
         <p class="text-slate-700 leading-relaxed comment-text-content">${data.comment || ''}</p>
     `;
@@ -72,18 +91,44 @@ function appendActivityComment(data) {
 function updateActivityComment(data) {
     if (!data.comment_id) return;
     const commentItem = document.getElementById('comment-item-' + data.comment_id);
-    if (!commentItem) return;
 
-    // Update comment body text
-    const textEl = commentItem.querySelector('.comment-text-content');
-    if (textEl) {
-        textEl.textContent = data.comment || '';
-    }
+    const userIdMeta = document.querySelector('meta[name="auth-user-id"]');
+    const authUserId = userIdMeta ? userIdMeta.content : null;
+    const isOwnComment = data.user_id && authUserId && String(data.user_id) === String(authUserId);
 
-    // Update timestamp with (diedit) indicator
-    const timeEl = commentItem.querySelector('.comment-time');
-    if (timeEl) {
-        timeEl.innerHTML = `Baru saja <span class="text-3xs italic text-slate-400 font-normal">(diedit)</span>`;
+    if (commentItem) {
+        // Update existing element
+        commentItem.className = 'bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 text-xs text-slate-800 space-y-1 transition-all duration-300';
+        commentItem.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-indigo-900">${data.commenter_name || 'User'}</span>
+                    <span class="text-2xs px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-semibold">${data.commenter_role || 'Supervisor'}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-2xs text-slate-400 comment-time">
+                        Baru saja <span class="text-3xs italic text-slate-400 font-normal">(diedit)</span>
+                    </span>
+                    ${isOwnComment ? `
+                        <button
+                            wire:click="startEditComment(${data.comment_id})"
+                            type="button"
+                            title="Edit Komentar"
+                            class="text-indigo-600 hover:text-indigo-800 text-2xs font-medium inline-flex items-center gap-0.5 cursor-pointer ml-1"
+                        >
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Edit</span>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+            <p class="text-slate-700 leading-relaxed comment-text-content">${data.comment || ''}</p>
+        `;
+    } else {
+        // If element not present yet, append using the same logic
+        appendActivityComment(data);
     }
 }
 
